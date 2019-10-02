@@ -13,6 +13,6 @@ def create():
 def like(id,like):
 	return get_model().Like(id,like)
 
-@publicacion.route('/obtener/id', methods=["GET",])
+@publicacion.route('/obtener/<id>', methods=["GET",])
 def get(id):
 	return get_model().get_publicacion(id)

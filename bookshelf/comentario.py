@@ -9,6 +9,6 @@ def create():
 		content = request.get_json()
 		return get_model().create_comentario()
 
-@comentario.route('/obtener/id', methods=["GET",])
+@comentario.route('/obtener/<id>', methods=["GET",])
 def get(id):
 	return get_model().get_comentario(id)

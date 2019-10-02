@@ -35,14 +35,14 @@ class Usuario(ndb.Model):
 	password = ndb.StringProperty()
 	correo = ndb.StringProperty()
 	nombre_real = ndb.StringProperty()
-	fecha_nacimiento = ndb.DateTimeProperty(auto_now_add=True)
+	fecha_nacimiento = ndb.StringProperty()
 	carrera = ndb.StringProperty()
-	almuerzos_preferidos = ndb.StructuredProperty(Comida, repeated=True)
+	almuerzos_preferidos = ndb.StructuredProperty(Comida, repeated=False)
 	quack_puntos = ndb.FloatProperty()
 
 class Publicacion(ndb.Model):
 	pubId = ndb.IntegerProperty()
-	user = ndb.StructuredProperty(Usuario, repeated=True)
+	user = ndb.StructuredProperty(Usuario, repeated=False)
 	nombre_comida = ndb.StructuredProperty(Comida)
 	valoracion = ndb.FloatProperty()
 	contenido = ndb.TextProperty()
@@ -52,7 +52,7 @@ class Publicacion(ndb.Model):
 
 class Comentario(ndb.Model):
 	comentId = ndb.IntegerProperty()
-	user = ndb.StructuredProperty(Usuario, repeated=True)
+	user = ndb.StructuredProperty(Usuario, repeated=False)
 	publicacion = ndb.StructuredProperty(Publicacion, repeated=False)
 	comentario = ndb.TextProperty()
 	valoracion = ndb.FloatProperty()
@@ -60,7 +60,7 @@ class Comentario(ndb.Model):
 
 class Fila(ndb.Model):
 	filaId = ndb.IntegerProperty()
-	user = ndb.StructuredProperty(User)
+	user = ndb.StructuredProperty(Usuario)
 	fecha_hora = ndb.DateTimeProperty(auto_now_add=True)
 	puntaje = ndb.FloatProperty()
 	es_junaeb = ndb.BooleanProperty()
@@ -71,17 +71,19 @@ def returnJson_usuario(user):
 	r['nombre_usuario'] = user.nombre_usuario
 	r['correo'] = user.correo
 	r["nombre_real"] = user.nombre_real
-	r["fecha_nacimiento"] = user.fecha_nacimiento.strftime("%m/%d/%Y, %H:%M:%S")
+	r["fecha_nacimiento"] = user.fecha_nacimiento
 	r["carrera"] = user.carrera
 	r["almuerzos_preferidos"] = []
 	r["quack_puntos"] = user.quack_puntos
 	aux = []
-	for almuerzo in user.almuerzos_preferidos:
-		r["almuerzos_preferidos"] = returnJson_comida(almuerzo)
+	if user.almuerzos_preferidos:
+		for almuerzo in user.almuerzos_preferidos:
+			r["almuerzos_preferidos"] = returnJson_comida(almuerzo)
 	return r
 
 def returnJson_comida(comida):
 	r = dict()
+	r["id"] = comida.key.id()
 	r["nombre_comida"] = comida.nombre_comida
 	r["puntaje_promedio"] = comida.puntaje_promedio
 	r["comida_del_dia"] = comida.comida_del_dia
@@ -90,18 +92,20 @@ def returnJson_comida(comida):
 def returnJson_publicacion(pub):
 	r = dict()
 	r["pubId"] = pub.pubId
+	r["id"] = pub.key.id()
 	r["user"] = returnJson_usuario(pub.user)
 	r["nombre_comida"] = pub.nombre_comida
 	r["valoracion"] = pub.valoracion
 	r["contenido"] = pub.contenido
 	r["likes"] = pub.likes
 	r["dislikes"] = pub.dislikes
-	r["fecha_hora"] = pub.fecha_hora.strftime("%m/%d/%Y, %H:%M:%S")
+	r["fecha_hora"] = pub.fecha_hora.strftime("%m/%d/%Y,%H:%M:%S")
 	return r
 
 def returnJson_comentario(com):
 	r = dict()
 	r["comentId"] = com.comentId
+	r["id"] = com.key.id()
 	r["user"] = returnJson_usuario(com.user)
 	r["publicacion"] = returnJson_publicacion(com.publicacion)
 	r["comentario"] = com.comentario
@@ -112,6 +116,7 @@ def returnJson_comentario(com):
 def returnJson_fila(fila):
 	r = dict()
 	r["filaId"] = fila.filaId
+	r["id"] = fila.key.id()
 	r["fecha_hora"] = fila.fecha_hora.strftime("%m/%d/%Y, %H:%M:%S")
 	r["puntaje"] = fila.puntaje
 	r["user"] = returnJson_usuario(fila.user)
@@ -119,7 +124,7 @@ def returnJson_fila(fila):
 	r["es_normal"] = fila.es_normal
 	return r
 
-### MÉTODOS DE USUARIO
+### METODOS DE USUARIO
 def update_usuario(data, id=None):
 	usuario = Usuario()
 	usuario.nombre_usuario = str(data["nombre_usuario"])
@@ -127,52 +132,55 @@ def update_usuario(data, id=None):
 	usuario.correo = str(data["correo"])
 	usuario.nombre_real = str(data["nombre_real"])
 	usuario.carrera = str(data["carrera"])
-	usuario.fecha_nacimiento = datetime.datetime(data["fecha_nacimiento"])
+	usuario.fecha_nacimiento = str(data["fecha_nacimiento"])
 	usuario.quack_puntos = int(data["quack_puntos"])
 	comidas = []
-	for comida in data["almuerzos_preferidos"]:
-		aux = Comida.query(Comida.nombre_comida == str(comida))
-		comidas.append(aux)
-	usuario.almuerzos_preferidos = comidas
+	if data["almuerzos_preferidos"]:
+		for comida in data["almuerzos_preferidos"]:
+			aux = Comida.query(Comida.nombre_comida == str(comida)).fetch()
+			for c in aux:
+				c.append(aux)
+	if comidas: usuario.almuerzos_preferidos = comida
 	usuario.put()
 	return json.dumps(returnJson_usuario(usuario))
 
 create_usuario = update_usuario
 
 def get_best_launch(username):
-	user = Usuario.query(Usuario.nombre_usuario == str(username))
+	user = Usuario.query(Usuario.nombre_usuario == str(username)).fetch()[0]
+	print user
 	res = []
-	for comida in user.almuerzos_preferidos:
-		res.append(returnJson_comida(comida))
+	if user.almuerzos_preferidos:
+		for comida in user.almuerzos_preferidos:
+			res.append(returnJson_comida(comida))
 	return json.dumps(res)
 
 def delete_usuario(username):
-	user = Usuario.query(Usuario.nombre_usuario == username)
+	user = Usuario.query(Usuario.nombre_usuario == username).fetch()[0]
 	user.key.delete()
 	return "Correct"
 	
 def get_usuario(username):
-	return json.dumps(returnJson_usuario(Usuario.query(Usuario.nombre_usuario == username)))
+	return json.dumps(returnJson_usuario(Usuario.query(Usuario.nombre_usuario == username).fetch()[0]))
 ### LISTOS METODOS DE USUARIO
 
 """ METODOS DE PUBLICACION """
 def update_publicacion(data, id=None):
 	pub = Publicacion()
 	pub.pubId = int(data["pubId"])
-	pub.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == username))
-	pub.nombre_comida = returnJson_comida(Comida.query(Comida.nombre_comida == pub.nombre_comida))
+	pub.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == username).fetch()[0])
+	pub.nombre_comida = returnJson_comida(Comida.query(Comida.nombre_comida == pub.nombre_comida).fetch()[0])
 	pub.valoracion = float(data["valoracion"])
 	pub.contenido = str(data["contenido"])
 	pub.likes = str(data["likes"])
 	pub.dislikes = str(data["dislikes"])
-	pub.fecha_hora = datetime.datetime(data["fecha_hora"])
 	pub.put()
 	return json.dumps(pub)
 
 create_publicacion = update_publicacion
 
 def Like(pubId, like):
-	pub = Publicacion.query(Publicacion.pubId == pubId)
+	pub = Publicacion.get_by_id(int(pubId))
 	if like: pub.like += 1
 	else: pub.dislikes += 1
 	return json.dumps(returnJson_publicacion(pub))
@@ -185,17 +193,24 @@ def delete_publicacion(pubId):
 def get_publicacion(pubId):
 	pub = Publicacion.get_by_id(int(pubId))
 	return json.dumps(returnJson_publicacion(pub))
+
+def get_all_publicaciones():
+	publcaciones = Publicacion.query().fetch()
+	p = []
+	if publicaciones:
+		for publicacion in publicaciones:
+			p.append(returnJson_publicacion(publicacion))
+	return json.dumps(p)
 """ FIN METODOS DE PUBLICACCION """
 
 """ METODOS DE COMENTARIO """
 def update_comentario(data, id=None):
 	c = Comentario()
 	c.comentId = int(data["comentId"])
-	c.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == str(data["nombre_usuario"])))
+	c.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == str(data["nombre_usuario"])).fetch()[0])
 	c.publicacion = returnJson_publicacion(Publicacion.query(Publicacion.pubId == int(data["publicacion"])))
 	c.comentario = str(data["comentario"])
 	c.valoracion = float(data["valoracion"])
-	c.fecha_hora = datetime.datetime(data["fecha_hora"])
 	return json.dumps(returnJson_comentario(c))
 
 create_comentario = update_comentario
@@ -205,6 +220,14 @@ def delete_comentario(comentId):
 	c.key.delete()
 	return "Correct"
 
+def get_all_comentario():
+	c = []
+	comentarios = Comentario.query().fetch()
+	if comentarios:
+		for comentario in comentarios:
+			c.append(returnJson_comentario(comentario))
+	return json.dumps(c)
+
 def get_comentario(comentId):
 	return json.dumps(returnJson_comentario(Comentario.get_by_id(int(comentId))))
 """ FIN METODOS COMENTARIO """
@@ -213,8 +236,7 @@ def get_comentario(comentId):
 def update_fila(data, id=None):
 	fila = Fila()
 	fila.filaId = int(data["filaId"])
-	fila.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == str(data["user"])))
-	fila.fecha_hora = datetime.datetime(data["fecha_hora"])
+	fila.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == str(data["user"])).fetch()[0])
 	fila.puntaje = float(data["puntaje"])
 	fila.es_junaeb = bool(data["es_junaeb"])
 	fila.es_normal = bool(data["es_normal"])
@@ -224,8 +246,9 @@ def update_fila(data, id=None):
 create_fila = update_fila
 
 def get_mean_value(dt):
-	filas = [float(f.puntaje) for f in Fila.query(Fila.fecha_hora == datetime.datetime(dt))]
-	filas = sum(filas)/len(filas)
+	# hacer busqueda por 1 hora antes
+	filas = Fila.query(Fila.fecha_hora == datetime.datetime(dt)).fetch()
+
 	return json.dumps(filas)
 
 def delete_fila(filaId):
@@ -233,14 +256,22 @@ def delete_fila(filaId):
 	fila.key.delete()
 	return "Correct"
 
+def get_all_fila():
+	f = []
+	filas = Fila.query().fetch()
+	if filas:
+		for fila in filas:
+			f.append(returnJson_fila(fila))
+	return json.dumps(f)
+
 def get_fila(filaId):
-	return json.dumps(returnJson_fila(Fila.query(Fila.filaId == int(filaId))))
+	return json.dumps(returnJson_fila(Fila.query(Fila.filaId == int(filaId))).fetch())
 """ FIN METODOS FILA """
 
 """ METODOS COMIDA """
 def update_comida(data, id=None):
 	c = Comida()
-	c.nombre_comida = srt(data["nombre_comida"])
+	c.nombre_comida = str(data["nombre_comida"])
 	c.puntaje_promedio = float(data["puntaje_promedio"])
 	c.comida_del_dia = bool(data["comida_del_dia"])
 	c.put()
@@ -250,26 +281,38 @@ create_comida = update_comida
 
 def get_comida_dia():
 	comidas = []
-	for comida in Comida.query(Comida.comida_del_dia == True):
+	for comida in Comida.query(Comida.comida_del_dia == True).fetch():
 		comidas.append(returnJson_comida(comida))
 	return json.dumps(comidas)
 
 def set_comida(comida1, comida2, comida3, comida4):
-	for comida in Comida.query():
+	for comida in Comida.query().fetch():
 		if comida.nombre_comida == comida1: comida.comida_del_dia = True
 		elif comida.nombre_comida == comida2: comida.comida_del_dia = True
 		elif comida.nombre_comida == comida3: comida.comida_del_dia = True
 		elif comida.nombre_comida == comida4: comida.comida_del_dia = True
 		else: comida.comida_del_dia = False
 
-def get_best_comida():
-	comida = Comida.query().order(-Comida.puntaje_promedio)
-	return json.dumps(comida[0])
+def get_best_comida(n):
+	comidas = Comida.query().order(-Comida.puntaje_promedio).fetch()
+	if len(comidas) > n: comidas = comidas[:n]
+	aux = []
+	for comida in comidas:
+		aux.append(returnJson_comida(comida))
+	return json.dumps(aux)
 
 def delete_comida(id):
 	comida = Comida.get_by_id(int(id))
 	comida.key.delete()
 	return "Correct"
+
+def get_all_comida():
+	comidas = Comida.query().fetch()
+	c = []
+	if comidas:
+		for comida in comidas:
+			c.append(returnJson_comida(comida))
+	return json.dumps(c)
 
 def get_comida(id):
 	return json.dumps(returnJson_comida(Comida.get_by_id(int(id))))

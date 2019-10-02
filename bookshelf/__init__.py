@@ -39,19 +39,19 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     # Register the Bookshelf CRUD blueprint.
 
     from .usuario import usuario
-    app.register_blueprint(api, url_prefix='/usuario')
+    app.register_blueprint(usuario, url_prefix='/usuario')
 
     from .comida import comida
-    app.register_blueprint(api, url_prefix='/comida')
+    app.register_blueprint(comida, url_prefix='/comida')
 
     from .publicacion import publicacion
-    app.register_blueprint(api, url_prefix='/publicacion')
+    app.register_blueprint(publicacion, url_prefix='/publicacion')
 
     from .comentario import comentario
-    app.register_blueprint(api, url_prefix='/comentario')
+    app.register_blueprint(comentario, url_prefix='/comentario')
 
     from .fila import fila
-    app.register_blueprint(api, url_prefix='/fila')
+    app.register_blueprint(fila, url_prefix='/fila')
 
     # Add a default root route.)
 

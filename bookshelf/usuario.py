@@ -7,7 +7,7 @@ usuario = Blueprint('usuario', __name__)
 def create():
 	if request.method == "POST":
 		content = request.get_json()
-		return get_model().crear_usuario(content)
+		return get_model().create_usuario(content)
 
 @usuario.route('/obtener/<id>', methods=['GET',])
 def get(id):
