@@ -76,6 +76,7 @@ def returnJson_usuario(user):
 	r["carrera"] = user.carrera
 	r["almuerzos_preferidos"] = []
 	r["quack_puntos"] = user.quack_puntos
+	r["password"] = user.password
 	aux = []
 	if user.almuerzos_preferidos:
 		for almuerzo in user.almuerzos_preferidos:
