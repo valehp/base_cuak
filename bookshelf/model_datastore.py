@@ -256,7 +256,10 @@ def get_mean_value(hora):
 		for fila in filas:
 			promedio += fila.puntaje
 		promedio /= len(filas)
-	return json.dumps(promedio)
+		
+	aux = dict()
+	aux["value"] = promedio
+	return json.dumps(aux)
 
 def delete_fila(filaId):
 	fila = Fila.get_by_id(int(filaId))
