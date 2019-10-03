@@ -9,9 +9,9 @@ def create():
 		content = request.get_json()
 		return get_model().create_usuario(content)
 
-@usuario.route('/obtener/<id>', methods=['GET',])
-def get(id):
-	return get_model().get_usuario(id)
+@usuario.route('/obtener/<username>', methods=['GET',])
+def get(username):
+	return get_model().get_usuario(username)
 
 @usuario.route('/best_launch/<username>', methods=["GET",])
 def best_launch(username):

@@ -20,6 +20,7 @@ from google.appengine.ext import ndb
 import datetime
 import json
 
+
 builtin_list = list
 
 def init_app(app):
@@ -208,7 +209,7 @@ def update_comentario(data, id=None):
 	c = Comentario()
 	c.comentId = int(data["comentId"])
 	c.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == str(data["nombre_usuario"])).fetch()[0])
-	c.publicacion = returnJson_publicacion(Publicacion.query(Publicacion.pubId == int(data["publicacion"])))
+	c.publicacion = returnJson_publicacion(Publicacion.query(Publicacion.get_by_id(int(data["publicacion"]))))
 	c.comentario = str(data["comentario"])
 	c.valoracion = float(data["valoracion"])
 	return json.dumps(returnJson_comentario(c))
@@ -245,11 +246,17 @@ def update_fila(data, id=None):
 
 create_fila = update_fila
 
-def get_mean_value(dt):
+def get_mean_value(hora):
 	# hacer busqueda por 1 hora antes
-	filas = Fila.query(Fila.fecha_hora == datetime.datetime(dt)).fetch()
-
-	return json.dumps(filas)
+	h = datetime.timedelta(hours = 1)
+	hoy = datetime.datetime.now()
+	filas = Fila.query(ndb.AND(Fila.fecha_hora >= (hoy-h), Fila.fecha_hora <= hoy)).fetch()
+	promedio = 0.0
+	if filas:
+		for fila in filas:
+			promedio += fila.puntaje
+		promedio /= len(filas)
+	return json.dumps(promedio)
 
 def delete_fila(filaId):
 	fila = Fila.get_by_id(int(filaId))
@@ -317,110 +324,3 @@ def get_all_comida():
 def get_comida(id):
 	return json.dumps(returnJson_comida(Comida.get_by_id(int(id))))
 """ FIN METODOS COMIDA """
-
-
-"""
-def update(data, id=None):
-    order = Order()
-    order.userId = int(data['userId'])
-    order.userName = str(data['userName'])
-    order.status = str(data['status'])
-    order.paymentDetail = str(data['paymentDetail'])
-    order.address = str(data['address'])
-
-    aux = []
-    total = 0
-
-    for item in data["items"]:
-        itemAux = Item()
-        itemAux.itemId = int(item['itemId'])
-        itemAux.name = str(item['name'])
-        itemAux.price = int(item['price'])
-        itemAux.quantity = int(item['quantity'])
-        itemAux.description = str(item['description'])
-
-        itemAux.put()
-
-        total += int(item["price"]) * int(item["quantity"])
-        aux.append(itemAux)
-
-    order.items = aux
-    print(total)
-    order.total = int(total)
-
-    order.put()
-
-    return returnJson(order)
-
-create = update
-
-
-def returnJson(order):
-    result = dict()
-
-    result['id'] = order.key.id()
-    result['userId'] = order.userId
-    result['userName'] = order.userName
-    result['orderDate'] = order.orderDate.strftime("%m/%d/%Y, %H:%M:%S")
-    result['status'] = order.status
-    result['paymentDetail'] = order.paymentDetail
-    result['address'] = order.address
-    result['total'] = order.total
-
-    result['items'] = []
-
-    for item in order.items:
-        itemAux = dict()
-        itemAux['itemId'] = item.itemId
-        itemAux['name'] = item.name
-        itemAux['price'] = item.price
-        itemAux['quantity'] = item.quantity
-        itemAux['description'] = item.description
-
-        result['items'].append(itemAux)
-
-    return json.dumps(result)
-
-def get(id):
-    order = Order.get_by_id(int(id))
-    return returnJson(order)
-
-def listAll():
-    query_iterator = Order.query().fetch()
-
-    result = []
-    for item in query_iterator:
-        result.append(json.loads(returnJson(item)))
-
-    return json.dumps(result)
-
-def listByUser(userId):
-    query_iterator = Order.query(Order.userId == int(userId)).fetch()
-
-    result = []
-    for item in query_iterator:
-        result.append(json.loads(returnJson(item)))
-
-    return json.dumps(result)
-
-def listItems(orderId):
-    order = Order.get_by_id(int(orderId))
-
-    result = []
-    for item in order.items:
-        aux = {}
-        aux["id"] = item.itemId
-        aux['name'] = item.name
-        aux["price"] = item.price
-        aux["quantity"] = item.quantity
-        aux["description"] = item.description
-        result.append(aux)
-
-    return json.dumps(result)
-
-def delete(id):
-    order = Order.get_by_id(int(id))
-    order.key.delete()
-    return 'Correct'
-
-"""

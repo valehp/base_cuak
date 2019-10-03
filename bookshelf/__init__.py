@@ -57,7 +57,7 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
 
     @app.route("/")
     def index():
-        return redirect(url_for('example.index'))
+        return redirect('/')
 
     @app.errorhandler(500)
     def server_error(e):
