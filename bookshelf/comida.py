@@ -17,7 +17,7 @@ def get(id):
 def comidas():
 	return get_model().get_comida_dia()
 
-@comida.route('/set_comida_dia/<comida1>/<comida2>/<comida3>/<comida4>', methods=["POST",])
+@comida.route('/set_comida_dia/<comida1>/<comida2>/<comida3>/<comida4>', methods=["PATCH",])
 def set_comidas(comida1, comida2, comida3, comida4):
 	return get_model().set_comida(comida1, comida2, comida3, comida4)
 
