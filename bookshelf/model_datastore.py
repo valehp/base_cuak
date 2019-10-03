@@ -293,12 +293,22 @@ def get_comida_dia():
 	return json.dumps(comidas)
 
 def set_comida(comida1, comida2, comida3, comida4):
+	comidas = []
 	for comida in Comida.query().fetch():
-		if comida.nombre_comida == comida1: comida.comida_del_dia = True
-		elif comida.nombre_comida == comida2: comida.comida_del_dia = True
-		elif comida.nombre_comida == comida3: comida.comida_del_dia = True
-		elif comida.nombre_comida == comida4: comida.comida_del_dia = True
+		if comida.nombre_comida == comida1: 
+			comida.comida_del_dia = True
+			comidas.append(returnJson_comida(comida))
+		elif comida.nombre_comida == comida2: 
+			comida.comida_del_dia = True
+			comidas.append(returnJson_comida(comida))
+		elif comida.nombre_comida == comida3: 
+			comida.comida_del_dia = True
+			comidas.append(returnJson_comida(comida))
+		elif comida.nombre_comida == comida4: 
+			comida.comida_del_dia = True
+			comidas.append(returnJson_comida(comida))
 		else: comida.comida_del_dia = False
+	return json.dumps(comidas)
 
 def get_best_comida(n):
 	comidas = Comida.query().order(-Comida.puntaje_promedio).fetch()
