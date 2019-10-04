@@ -16,3 +16,7 @@ def like(id,like):
 @publicacion.route('/obtener/<id>', methods=["GET",])
 def get(id):
 	return get_model().get_publicacion(id)
+
+@publicacion.route('/todos', methods=["GET",])
+def all():
+	return get_model().get_all_publicacion()

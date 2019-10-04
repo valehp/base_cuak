@@ -12,3 +12,7 @@ def create():
 @comentario.route('/obtener/<id>', methods=["GET",])
 def get(id):
 	return get_model().get_comentario(id)
+
+@comentario.route('/todos', methods=["GET",])
+def all():
+	return get_model().get_all_comentario()
