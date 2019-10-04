@@ -196,8 +196,8 @@ def get_publicacion(pubId):
 	pub = Publicacion.get_by_id(int(pubId))
 	return json.dumps(returnJson_publicacion(pub))
 
-def get_all_publicaciones():
-	publcaciones = Publicacion.query().fetch()
+def get_all_publicacion():
+	publicaciones = Publicacion.query().fetch()
 	p = []
 	if publicaciones:
 		for publicacion in publicaciones:
@@ -223,8 +223,8 @@ def delete_comentario(comentId):
 	return "Correct"
 
 def get_all_comentario():
-	c = []
 	comentarios = Comentario.query().fetch()
+	c = []
 	if comentarios:
 		for comentario in comentarios:
 			c.append(returnJson_comentario(comentario))
@@ -247,7 +247,7 @@ def update_fila(data, id=None):
 
 create_fila = update_fila
 
-def get_mean_value(hora):
+def get_mean_value():
 	# hacer busqueda por 1 hora antes
 	h = datetime.timedelta(hours = 1)
 	hoy = datetime.datetime.now()

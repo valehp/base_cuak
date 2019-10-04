@@ -19,4 +19,4 @@ def get(id):
 
 @fila.route('/todos', methods=["GET",])
 def all():
-	return getl_model().get_all_fila()
+	return get_model().get_all_fila()
