@@ -247,11 +247,15 @@ def update_fila(data, id=None):
 
 create_fila = update_fila
 
-def get_mean_value():
+def get_mean_value(tipo):
 	# hacer busqueda por 1 hora antes
 	h = datetime.timedelta(hours = 1)
 	hoy = datetime.datetime.now()
-	filas = Fila.query(ndb.AND(Fila.fecha_hora >= (hoy-h), Fila.fecha_hora <= hoy)).fetch()
+	filas = Fila.query(ndb.AND(Fila.fecha_hora >= (hoy-h), Fila.fecha_hora <= hoy, Fila.es_normal == True)).fetch()
+	
+	if tipo == 1:
+		filas = Fila.query(ndb.AND(Fila.fecha_hora >= (hoy-h), Fila.fecha_hora <= hoy, Fila.es_juaneb == True)).fetch()
+	
 	promedio = 0.0
 	if filas:
 		for fila in filas:
