@@ -9,9 +9,9 @@ def create():
 		content = request.get_json()
 		return get_model().create_fila()
 
-@fila.route('/mean_value/type', methods=["GET",])
-def like(type):
-	return get_model().get_mean_value(type)
+@fila.route('/mean_value/<tipo>', methods=["GET",])
+def like(tipo):
+	return get_model().get_mean_value(tipo)
 
 @fila.route('/obtener/<id>', methods=["GET",])
 def get(id):
