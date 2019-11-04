@@ -7,7 +7,7 @@ publicacion = Blueprint('publicacion', __name__)
 def create():
 	if request.method == "POST":
 		content = request.get_json()
-		return get_model().create_publicacion()
+		return get_model().create_publicacion(content)
 
 @publicacion.route('/AddLike/<id>/<like>', methods=["GET",])
 def like(id,like):

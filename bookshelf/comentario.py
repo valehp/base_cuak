@@ -7,7 +7,7 @@ comentario = Blueprint('comentario', __name__)
 def create():
 	if request.method == "POST":
 		content = request.get_json()
-		return get_model().create_comentario()
+		return get_model().create_comentario(content)
 
 @comentario.route('/obtener/<id>', methods=["GET",])
 def get(id):

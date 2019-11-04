@@ -7,7 +7,7 @@ fila = Blueprint('fila', __name__)
 def create():
 	if request.method == "POST":
 		content = request.get_json()
-		return get_model().create_fila()
+		return get_model().create_fila(content)
 
 @fila.route('/mean_value/<tipo>', methods=["GET",])
 def like(tipo):
