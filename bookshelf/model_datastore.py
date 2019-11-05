@@ -171,12 +171,12 @@ def get_usuario(username):
 def update_publicacion(data, id=None):
 	pub = Publicacion()
 	pub.pubId = int(data["pubId"])
-	pub.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == username).fetch()[0])
-	pub.nombre_comida = returnJson_comida(Comida.query(Comida.nombre_comida == pub.nombre_comida).fetch()[0])
+	pub.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == data["user"]).fetch()[0])
+	pub.nombre_comida = returnJson_comida(Comida.query(Comida.nombre_comida == data["nombre_comida"]).fetch()[0])
 	pub.valoracion = float(data["valoracion"])
 	pub.contenido = str(data["contenido"])
-	pub.likes = str(data["likes"])
-	pub.dislikes = str(data["dislikes"])
+	pub.likes = int(data["likes"])
+	pub.dislikes = int(data["dislikes"])
 	pub.put()
 	return json.dumps(pub)
 
