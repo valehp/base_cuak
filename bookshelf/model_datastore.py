@@ -138,12 +138,12 @@ def update_usuario(data, id=None):
 	usuario.fecha_nacimiento = str(data["fecha_nacimiento"])
 	usuario.quack_puntos = int(data["quack_puntos"])
 	comidas = []
-	if data["almuerzos_preferidos"]:
+	if "almuerzos_preferidos" in data:
 		for comida in data["almuerzos_preferidos"]:
-			aux = Comida.query(Comida.nombre_comida == str(comida)).fetch()
+			aux = Comida.query(Comida.nombre_comida == str(comida["nombre_comida"])).fetch()
 			for c in aux:
-				c.append(aux)
-	if comidas: usuario.almuerzos_preferidos = comida
+				c.append(aux[0])
+	usuario.almuerzos_preferidos = comida
 	usuario.put()
 	return json.dumps(returnJson_usuario(usuario))
 
@@ -165,14 +165,22 @@ def delete_usuario(username):
 	
 def get_usuario(username):
 	return json.dumps(returnJson_usuario(Usuario.query(Usuario.nombre_usuario == username).fetch()[0]))
+
+def get_all_usuario():
+	usuarios = Usuario.query().fetch()
+	c = []
+	if usuarios:
+		for usuario in usuarios:
+			c.append(returnJson_usuario(usuario))
+	return json.dumps(c)
 ### LISTOS METODOS DE USUARIO
 
 """ METODOS DE PUBLICACION """
 def update_publicacion(data, id=None):
 	pub = Publicacion()
 	pub.pubId = int(data["pubId"])
-	pub.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == username).fetch()[0])
-	pub.nombre_comida = returnJson_comida(Comida.query(Comida.nombre_comida == pub.nombre_comida).fetch()[0])
+	pub.user = Usuario.query(Usuario.nombre_usuario == data["user"]["nombre_usuario"]).fetch()[0]
+	pub.nombre_comida = Comida.query(Comida.nombre_comida == data["nombre_comida"]["nombre_comida"]).fetch()[0]
 	pub.valoracion = float(data["valoracion"])
 	pub.contenido = str(data["contenido"])
 	pub.likes = str(data["likes"])
@@ -210,10 +218,11 @@ def get_all_publicacion():
 def update_comentario(data, id=None):
 	c = Comentario()
 	c.comentId = int(data["comentId"])
-	c.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == str(data["nombre_usuario"])).fetch()[0])
-	c.publicacion = returnJson_publicacion(Publicacion.query(Publicacion.get_by_id(int(data["publicacion"]))))
+	c.user = Usuario.query(Usuario.nombre_usuario == str(data["nombre_usuario"]["nombre_usuario"])).fetch()[0]
+	c.publicacion = Publicacion.query(Publicacion.pubId == int(data["publicacion"]["pubId"]))
 	c.comentario = str(data["comentario"])
 	c.valoracion = float(data["valoracion"])
+	c.put()
 	return json.dumps(returnJson_comentario(c))
 
 create_comentario = update_comentario
@@ -239,7 +248,7 @@ def get_comentario(comentId):
 def update_fila(data, id=None):
 	fila = Fila()
 	fila.filaId = int(data["filaId"])
-	fila.user = returnJson_usuario(Usuario.query(Usuario.nombre_usuario == str(data["user"])).fetch()[0])
+	fila.user = Usuario.query(Usuario.nombre_usuario == str(data["user"]["nombre_usuario"])).fetch()[0]
 	fila.puntaje = float(data["puntaje"])
 	fila.es_junaeb = bool(data["es_junaeb"])
 	fila.es_normal = bool(data["es_normal"])
