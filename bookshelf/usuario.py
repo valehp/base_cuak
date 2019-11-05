@@ -18,5 +18,5 @@ def best_launch(username):
 	return get_model().get_best_launch(username)
 
 @usuario.route('/todos', methods=["GET", ])
-def all():
+def all_usuario():
 	return get_model().get_all_usuario()
