@@ -39,7 +39,7 @@ class Usuario(ndb.Model):
 	nombre_real = ndb.StringProperty()
 	fecha_nacimiento = ndb.StringProperty()
 	carrera = ndb.StringProperty()
-	almuerzos_preferidos = ndb.StructuredProperty(Comida, repeated=False)
+	almuerzos_preferidos = ndb.StructuredProperty(Comida, repeated=True)
 	quack_puntos = ndb.FloatProperty()
 
 class Publicacion(ndb.Model):
@@ -86,7 +86,7 @@ def returnJson_usuario(user):
 
 def returnJson_comida(comida):
 	r = dict()
-	r["id"] = comida.key.id()
+	if comida.key: r["id"] = comida.key.id()
 	r["nombre_comida"] = comida.nombre_comida
 	r["puntaje_promedio"] = comida.puntaje_promedio
 	r["comida_del_dia"] = comida.comida_del_dia
@@ -96,8 +96,8 @@ def returnJson_publicacion(pub):
 	r = dict()
 	r["pubId"] = pub.pubId
 	r["id"] = pub.key.id()
-	r["user"] = returnJson_usuario(pub.user)
-	r["nombre_comida"] = pub.nombre_comida
+	if pub.user: r["user"] = returnJson_usuario(pub.user)
+	if pub.nombre_comida: r["nombre_comida"] = returnJson_comida(pub.nombre_comida)
 	r["valoracion"] = pub.valoracion
 	r["contenido"] = pub.contenido
 	r["likes"] = pub.likes
@@ -141,9 +141,9 @@ def update_usuario(data, id=None):
 	if "almuerzos_preferidos" in data:
 		for comida in data["almuerzos_preferidos"]:
 			aux = Comida.query(Comida.nombre_comida == str(comida["nombre_comida"])).fetch()
-			for c in aux:
-				c.append(aux[0])
-	usuario.almuerzos_preferidos = comida
+			if len(aux) > 0:
+				comidas.append(aux[0])
+	usuario.almuerzos_preferidos = comidas
 	usuario.put()
 	return json.dumps(returnJson_usuario(usuario))
 
@@ -179,14 +179,16 @@ def get_all_usuario():
 def update_publicacion(data, id=None):
 	pub = Publicacion()
 	pub.pubId = int(data["pubId"])
-	pub.user = Usuario.query(Usuario.nombre_usuario == data["user"]["nombre_usuario"]).fetch()[0]
-	pub.nombre_comida = Comida.query(Comida.nombre_comida == data["nombre_comida"]["nombre_comida"]).fetch()[0]
+	pub.user = Usuario.query(Usuario.nombre_usuario == str(data["user"]["nombre_usuario"])).fetch()[0]
+	pub.nombre_comida = Comida.query(Comida.nombre_comida == str(data["nombre_comida"]["nombre_comida"])).fetch()[0]
 	pub.valoracion = float(data["valoracion"])
 	pub.contenido = str(data["contenido"])
 	pub.likes = int(data["likes"])
 	pub.dislikes = int(data["dislikes"])
 	pub.put()
-	return json.dumps(pub)
+	pub.pubId = pub.key.id()
+	pub.put()
+	return json.dumps(returnJson_publicacion(pub))
 
 create_publicacion = update_publicacion
 

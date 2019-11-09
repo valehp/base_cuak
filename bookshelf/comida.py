@@ -18,7 +18,7 @@ def comidas():
 	return get_model().get_comida_dia()
 
 @comida.route('/obtener/junaeb', methods=["GET",])
-def comidas():
+def comidas2():
 	return get_model().get_comida_junaeb()
 
 @comida.route('/set_comida_dia/junaeb/<comida1>/<comida2>/<comida3>/<comida4>', methods=["PATCH",])
@@ -26,7 +26,7 @@ def set_comidas(comida1, comida2, comida3, comida4):
 	return get_model().set_comida_junaeb(comida1, comida2, comida3, comida4)
 
 @comida.route('/set_comida_dia/<comida1>/<comida2>/<comida3>/<comida4>', methods=["PATCH",])
-def set_comidas(comida1, comida2, comida3, comida4):
+def set_comidas2(comida1, comida2, comida3, comida4):
 	return get_model().set_comida(comida1, comida2, comida3, comida4)
 
 @comida.route('/mejor_comida/<n>', methods=["GET",])
